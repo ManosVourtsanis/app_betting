@@ -1,5 +1,6 @@
 import openpyxl
 import re
+import xlwings as xw
 
 # Load the workbook and select the active worksheet
 filename = 'Bets By Tolis.xlsx'
@@ -97,54 +98,46 @@ def insert_data():
     workbook.save('Bets By Tolis.xlsx')
     print("Data successfully inserted.")
 
-def calculate_total_odds(odds):
-    total_odds = 1
-    for odd in odds:
-        try:
-            total_odds *= float(odd) if odd else 1
-        except ValueError:
-            total_odds *= 1
-    return round(total_odds, 3)
+
+def format_value(value):
+    return str(value) if value is not None else ""
 
 def view_data():
-    workbook = load_workbook()
+    workbook = openpyxl.load_workbook('Bets By Tolis.xlsx')
     sheet = workbook.active
 
     print("Viewing data:")
     date_column = 'A'
     max_row = sheet.max_row
 
+    # Print header
+    print(f"{'Row':<5} {'Match 01':<15} {'Odd 01':<10} {'Match 02':<15} {'Odd 02':<10} {'Match 03':<15} {'Odd 03':<10} {'Match 04':<15} {'Odd 04':<10} {'Match 05':<15} {'Odd 05':<10} {'Stake':<10} {'Total Odds':<10} {'Result':<10}")
+
     for row in range(2, max_row + 1):  # Starting from 2 assuming row 1 has headers
         date_value = sheet[f'{date_column}{row}'].value
         if date_value is not None:
+            row_number = row - 1 
             matches = [
-                sheet.cell(row=row, column=2).value,  # Match No1
-                sheet.cell(row=row, column=4).value,  # Match No2
-                sheet.cell(row=row, column=6).value,  # Match No3
-                sheet.cell(row=row, column=8).value,  # Match No4
-                sheet.cell(row=row, column=10).value  # Match No5
+                format_value(sheet.cell(row=row, column=2).value),  # Match No1
+                format_value(sheet.cell(row=row, column=4).value),  # Match No2
+                format_value(sheet.cell(row=row, column=6).value),  # Match No3
+                format_value(sheet.cell(row=row, column=8).value),  # Match No4
+                format_value(sheet.cell(row=row, column=10).value)  # Match No5
             ]
             odds = [
-                sheet.cell(row=row, column=3).value,  # Odd_01
-                sheet.cell(row=row, column=5).value,  # Odd_02
-                sheet.cell(row=row, column=7).value,  # Odd_03
-                sheet.cell(row=row, column=9).value,  # Odd_04
-                sheet.cell(row=row, column=11).value  # Odd_05
+                format_value(sheet.cell(row=row, column=3).value),  # Odd_01
+                format_value(sheet.cell(row=row, column=5).value),  # Odd_02
+                format_value(sheet.cell(row=row, column=7).value),  # Odd_03
+                format_value(sheet.cell(row=row, column=9).value),  # Odd_04
+                format_value(sheet.cell(row=row, column=11).value)  # Odd_05
             ]
-            stake = sheet.cell(row=row, column=12).value
-            result = sheet.cell(row=row, column=14).value
+            stake = format_value(sheet.cell(row=row, column=12).value)
+            total_odds = sheet.cell(row=row, column=13).value
+            result = format_value(sheet.cell(row=row, column=14).value)
 
-            # Calculate total odds
-            total_odds = calculate_total_odds(odds)
+            # Print row data
+            print(f"{row_number:<5} {matches[0]:<15} {odds[0]:<10} {matches[1]:<15} {odds[1]:<10} {matches[2]:<15} {odds[2]:<10} {matches[3]:<15} {odds[3]:<10} {matches[4]:<15} {odds[4]:<10} {stake:<10} {total_odds:<10} {result:<10}")
 
-            # Print row data including calculated total odds
-            print(f"Row {row}:")
-            print(f"  Date: {date_value}")
-            print(f"  Matches: {matches}")
-            print(f"  Odds: {odds}")
-            print(f"  Stake: {stake}")
-            print(f"  Result: {result}")
-            print(f"  Calculated Total Odds: {total_odds}")
 
 
 def menu():
