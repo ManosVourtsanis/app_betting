@@ -1,6 +1,6 @@
 import openpyxl
 import re
-import xlwings as xw
+#import xlwings as xw
 
 # Load the workbook and select the active worksheet
 filename = 'Bets By Tolis.xlsx'
@@ -103,7 +103,7 @@ def format_value(value):
     return str(value) if value is not None else ""
 
 def view_data():
-    workbook = openpyxl.load_workbook('Bets By Tolis.xlsx')
+    workbook = openpyxl.load_workbook('Bets By Tolis.xlsx', data_only=True)
     sheet = workbook.active
 
     print("Viewing data:")
@@ -111,7 +111,7 @@ def view_data():
     max_row = sheet.max_row
 
     # Print header
-    print(f"{'Row':<5} {'Match 01':<15} {'Odd 01':<10} {'Match 02':<15} {'Odd 02':<10} {'Match 03':<15} {'Odd 03':<10} {'Match 04':<15} {'Odd 04':<10} {'Match 05':<15} {'Odd 05':<10} {'Stake':<10} {'Total Odds':<10} {'Result':<10}")
+    print(f"{'Row':<5} {'Match 01':<15} {'Odd 01':<10} {'Match 02':<15} {'Odd 02':<10} {'Match 03':<15} {'Odd 03':<10} {'Match 04':<15} {'Odd 04':<10} {'Match 05':<15} {'Odd 05':<10} {'Stake':<10} {'Total_odds':<12} {'Result':<10} {'Profit/Lose':<12} {'Units':<15}")
 
     for row in range(2, max_row + 1):  # Starting from 2 assuming row 1 has headers
         date_value = sheet[f'{date_column}{row}'].value
@@ -132,11 +132,12 @@ def view_data():
                 format_value(sheet.cell(row=row, column=11).value)  # Odd_05
             ]
             stake = format_value(sheet.cell(row=row, column=12).value)
-            total_odds = sheet.cell(row=row, column=13).value
+            total_odds = format_value(sheet.cell(row=row, column=13).value)
             result = format_value(sheet.cell(row=row, column=14).value)
-
+            profit_lose = format_value(sheet.cell(row=row, column=15).value)
+            units = format_value(sheet.cell(row=row, column=16).value)
             # Print row data
-            print(f"{row_number:<5} {matches[0]:<15} {odds[0]:<10} {matches[1]:<15} {odds[1]:<10} {matches[2]:<15} {odds[2]:<10} {matches[3]:<15} {odds[3]:<10} {matches[4]:<15} {odds[4]:<10} {stake:<10} {total_odds:<10} {result:<10}")
+            print(f"{row_number:<5} {matches[0]:<15} {odds[0]:<10} {matches[1]:<15} {odds[1]:<10} {matches[2]:<15} {odds[2]:<10} {matches[3]:<15} {odds[3]:<10} {matches[4]:<15} {odds[4]:<10} {stake:<10} {total_odds:<12} {result:<10} {profit_lose:<12} {units:<15}")
 
 
 
