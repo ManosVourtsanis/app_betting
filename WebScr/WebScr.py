@@ -1,4 +1,4 @@
-#path C:\VTRoot\HarddiskVolume3\Users\Basilis\Desktop\Python\app_betting_tolis\app_v1.py
+#path C:\VTRoot\HarddiskVolume3\Users\Basilis\Desktop\Python\New_beeting_app\main.py
 
 import openpyxl
 import re
