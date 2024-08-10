@@ -4,21 +4,24 @@ import openpyxl
 import re
 import xlwings as xw
 import subprocess
+import os
 
 
 # Load the workbook and select the active worksheet
-filename = 'Bets By Tolis_v2.xlsx'
+base_path = 'C:/Users/Basilis/Desktop/Python/New-betting_app'
+filename = os.path.join(base_path, 'Store_bets.xlsx')
+
 
 def load_workbook():
     return openpyxl.load_workbook(filename)
 
-"""def force_recalculation(filename):
+def force_recalculation(filename):
     app = xw.App(visible=False)  # Run Excel in the background
     wb = app.books.open(filename)
     wb.app.calculate()  # Forces a recalculation of the entire workbook
     wb.save()
     wb.close()
-    app.quit()"""
+    app.quit()
 
 # Function to find the first empty row in a specific column (e.g., Column A)
 def find_first_empty_row_in_column(sheet, column):
@@ -60,62 +63,59 @@ def insert_data():
     workbook = load_workbook()
     sheet = workbook.active
     
-    data = []
-    num_rows = get_valid_integer("How many rows of data do you want to add? ")
-
-    for _ in range(num_rows):
-        date = input("Enter Date (DD-MM-YYYY): ")
-        
+    # Collect data for one row
+    date = input("Enter Date (DD-MM-YYYY): ")
+    
+    num_matches = get_valid_integer("How many matches do you want to add (1-5)? ")
+    while num_matches < 1 or num_matches > 5:
         num_matches = get_valid_integer("How many matches do you want to add (1-5)? ")
-        while num_matches < 1 or num_matches > 5:
-            num_matches = get_valid_integer("How many matches do you want to add (1-5)? ")
-        matches = []
-        odds = []
+    
+    matches = []
+    odds = []
 
-        for i in range(num_matches):
-            match = input(f"Enter Match No{i+1}: ")
-            odd = get_valid_float(f"Enter Odd_{i+1}: ")  # Read as string for later validation
-            matches.append(match)
-            odds.append(odd)
+    for i in range(num_matches):
+        match = input(f"Enter Match No{i+1}: ")
+        odd = get_valid_float(f"Enter Odd_{i+1}: ")  # Read as string for later validation
+        matches.append(match)
+        odds.append(odd)
 
-        # Append empty strings for matches and odds if fewer than 5 matches
-        while len(matches) < 5:
-            matches.append("")
-        while len(odds) < 5:
-            odds.append("")
+    # Append empty strings for matches and odds if fewer than 5 matches
+    while len(matches) < 5:
+        matches.append("")
+    while len(odds) < 5:
+        odds.append("")
 
-        stake = float(input("Enter Stake: "))
+    stake = float(input("Enter Stake: "))
 
-        # Calculate the total odds based on the provided formula
-        total_odds = calculate_total_odds(odds)
+    # Calculate the total odds based on the provided formula
+    total_odds = calculate_total_odds(odds)
 
-        # Default result is "Pending"
-        result = "Pending"
+    # Default result is "Pending"
+    result = "Pending"
 
-        # Append row data to the data list
-        data.append([
-            date,
-            matches[0], odds[0],
-            matches[1], odds[1],
-            matches[2], odds[2],
-            matches[3], odds[3],
-            matches[4], odds[4],
-            stake, total_odds, result
-        ])
+    # Append row data to the data list
+    data = [
+        date,
+        matches[0], odds[0],
+        matches[1], odds[1],
+        matches[2], odds[2],
+        matches[3], odds[3],
+        matches[4], odds[4],
+        stake, total_odds, result
+    ]
 
     # Find the first empty row in the "Date" column (Column A)
     first_empty_row = find_first_empty_row_in_column(sheet, 'A')
 
     # Write the data to the sheet starting from the first empty row
-    for i, row in enumerate(data, start=first_empty_row):
-        for j, value in enumerate(row, start=1):
-            if j not in [13, 15, 16]:  # Avoid writing to columns with formulas
-                sheet.cell(row=i, column=j, value=value)
+    for j, value in enumerate(data, start=1):
+        if j not in [13, 15, 16]:  # Avoid writing to columns with formulas
+            sheet.cell(row=first_empty_row, column=j, value=value)
 
 
     # Save the workbook
-    workbook.save('Bets By Tolis_v2.xlsx')
-    #force_recalculation(filename)
+    workbook.save(filename)
+    force_recalculation(filename)
     print("Data successfully inserted.")
 
 def format_value(value):
@@ -123,7 +123,7 @@ def format_value(value):
 
 def view_data():
 
-    workbook = openpyxl.load_workbook('Bets By Tolis_v2.xlsx', data_only=True)
+    workbook = openpyxl.load_workbook(filename, data_only=True)
     sheet = workbook.active
 
     print("Viewing data:")
@@ -131,7 +131,6 @@ def view_data():
     max_row = 500
     print(f"Total number of rows in the sheet: {max_row}")
     
-
     # Print header
     print(f"{'Row':<5} {'Match 01':<15} {'Odd 01':<10} {'Match 02':<15} {'Odd 02':<10} {'Match 03':<15} {'Odd 03':<10} {'Match 04':<15} {'Odd 04':<10} {'Match 05':<15} {'Odd 05':<10} {'Stake':<10} {'Total Odds':<12} {'Result':<10} {'Profit/Lose':<12} {'Units':<15}")
 
@@ -200,7 +199,7 @@ def delete_rows():
     
     # Save the workbook
     workbook.save(filename)
-    #force_recalculation(filename)
+    force_recalculation(filename)
     print(f"Row {row_to_clear} successfully cleared.")
 
 def menu():
