@@ -1,6 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from prettytable import PrettyTable
+import pandas as pd
 
 scopes = [
     'https://www.googleapis.com/auth/spreadsheets',
@@ -111,7 +112,7 @@ def insert_data():
 
     print("Data successfully inserted.")
 
-
+"""
 def delete_row():
     # Prompt user for the row number to clear
     row_to_delete = get_valid_integer("Enter the row number you want to delete (2 to {}): ".format(sheet.row_count))
@@ -157,10 +158,43 @@ def delete_row():
     sheet.batch_update(update_requests)
 
     print(f"Row {row_to_delete} successfully deleted and remaining rows shifted up.")
+"""
+#find_first_empty_row(sheet, 'A'):
 
+def delete_row():
+    # Get the total number of rows
+    num_rows = len(sheet.get_all_values())  # Total number of rows in the sheet
+    
+    # Prompt user for the row number to clear
+    row_to_clear = get_valid_integer(f"Enter the row number to clear (1-{num_rows}): ")
+    
+    # Validate the row number
+    if 1 <= row_to_clear <= num_rows:
+        # Clear the first 13 cells in the specified row
+        for col in range(1, 14):  # Columns 1 through 13
+            sheet.update_cell(row_to_clear, col, '')  # Set the cell to empty
+        
+        # Fetch the data from rows below
+        for row in range(row_to_clear, num_rows):
+            # Get the next row values
+            row_values = sheet.row_values(row + 1)
+            
+            # Prepare new row values by limiting to first 13 columns and preserving columns 14-16
+            if len(row_values) > 13:
+                new_row_values = row_values[:13]
+            else:
+                new_row_values = row_values + [''] * (13 - len(row_values))
 
-
-
+            # Insert the new row values into the current row position
+            # Only inserting the first 13 columns
+            sheet.insert_row(new_row_values, row + 1)
+            
+            # Delete the last row to keep the number of rows consistent
+            sheet.delete_rows(num_rows + 1)
+        
+        print(f"Cleared the first 13 cells in row {row_to_clear} and shifted up the rows below.")
+    else:
+        print(f"Invalid row number. Please enter a number between 1 and {num_rows}.")
 
 def menu():
     while True:
